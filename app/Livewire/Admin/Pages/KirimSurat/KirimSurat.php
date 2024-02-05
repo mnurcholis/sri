@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Pages\KirimSurat;
 
+use App\Models\KirimSurat as ModelsKirimSurat;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Livewire\Component;
@@ -36,7 +37,7 @@ class KirimSurat extends Component
         $this->isEdit = !$this->isEdit;
         $this->idNya = '';
         $this->judul = '';
-        $this->number = '';
+        $this->number = [];
         $this->file = '';
     }
 
@@ -79,16 +80,30 @@ class KirimSurat extends Component
                 'Authorization' => $token,
             ])->attach('document', $fileAttachment, $file) // Attach the file with the original name
                 ->post($url, $data);
+            // Output or log the result for debugging
+            // dd($result);
+
             // Handle the response as needed
             if ($response->successful()) {
-                $result = $response->json();
+                $this->dispatchBrowserEvent('swal:modal', [
+                    'type' => 'success', // Jenis alert, misalnya 'success', 'error', atau 'warning'
+                    'text' => 'Surat Berhasil dikirim...', // Isi pesan
+                ]);
             } else {
                 $result = $response->json();
+                $this->dispatchBrowserEvent('swal:modal', [
+                    'type' => 'error', // Jenis alert, misalnya 'success', 'error', atau 'warning'
+                    'text' => 'Error - ' . $result, // Isi pesan
+                ]);
             }
-
-            // Output or log the result for debugging
-            dd($result);
         }
+        ModelsKirimSurat::create([
+            'judul' => $this->judul,
+            'file' => $file,
+            'number' => json_encode($this->number)
+        ]);
+        $this->emit('refreshDatatable');
+        $this->cancel();
     }
 
 
