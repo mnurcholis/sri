@@ -1,0 +1,37 @@
+/* Import Google font - Poppins */
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap");
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Poppins", sans-serif;
+}
+.input-field {
+    position: relative;
+}
+.input-field label {
+    position: absolute;
+    top: 50%;
+    left: 15px;
+    transform: translateY(-50%);
+    font-size: 100%;
+    pointer-events: none;
+    transition: 0.3s;
+}
+input:focus ~ label,
+input:valid ~ label {
+    top: 0;
+    left: 15px;
+    font-size: 60%;
+    padding: 0 2px;
+    background: #fff;
+}
+
+.input-field-wrapper label {
+    display: none;
+}
+
+/* Show the label when the input field is focused */
+.input-field-wrapper input:focus + label {
+    display: block;
+}
