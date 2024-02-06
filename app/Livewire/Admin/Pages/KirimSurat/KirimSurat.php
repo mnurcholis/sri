@@ -12,10 +12,16 @@ class KirimSurat extends Component
 {
     use WithFileUploads;
 
-    public $idNya, $judul, $number = [], $file;
+    public $idNya, $judul, $number = [], $file, $data;
     public $isEdit = false;
 
-    protected $listeners = ['edit', 'delete'];
+    protected $listeners = ['edit', 'delete', 'LihatSurat'];
+
+    public function LihatSurat($id)
+    {
+        $this->data = ModelsKirimSurat::find($id);
+        $this->dispatchBrowserEvent('show-view-st-modal');
+    }
 
     protected $rules = [
         'name' => 'required|max:255',
@@ -41,29 +47,25 @@ class KirimSurat extends Component
         $this->file = '';
     }
 
-    public function edit($id)
-    {
-        $this->isEdit = true;
-        $data = ModelsUser::find($id);
-        $this->idNya = $data->id;
-        $this->name = $data->name;
-        $this->email = $data->email;
-        $this->wa = $data->wa;
-        $this->role_user = $data->getRoleNames();
-    }
     public function save()
     {
         $rules = [
-            'file' => 'required',
+            'judul' => 'required',
+            'file' => 'required|mimes:pdf|max:10240',
+            'number' => 'required',
         ];
-        $this->validate($rules);
+        $this->validate($rules, [
+            'checklist.*.file.required_if' => 'Harus di isi file PDF.',
+            'checklist.*.file.mimes' => 'File harus berupa PDF.',
+            'checklist.*.file.max' => 'Maksimal upload file PDF 10Mb.',
+        ]);
 
         $token = config('app.token_wa');
         $url = "https://pati.wablas.com/api/send-document";
 
         // Upload and store the document
-        $file = $this->file->store('documents', 'public');
-        $filePath = storage_path("app/public/$file");
+        $file = $this->file->store('public/documents');
+        $filePath = storage_path("app/$file");
 
         // Attach the file outside the loop
         $fileAttachment = File::get($filePath);
@@ -104,30 +106,6 @@ class KirimSurat extends Component
         ]);
         $this->emit('refreshDatatable');
         $this->cancel();
-    }
-
-
-    public function update()
-    {
-        $dataUser = ModelsUser::find($this->idNya);
-        $dataUser->name = $this->name;
-        $dataUser->email = $this->email;
-        $dataUser->syncRoles($this->role_user);
-        if ($this->password) {
-            $dataUser->password = Hash::make($this->password);
-        }
-        $dataUser->save();
-        $this->dispatchBrowserEvent('Update');
-        $this->emit('refreshDatatable');
-        $this->cancel();
-    }
-
-    public function delete($id)
-    {
-        $user = ModelsUser::find($id);
-        $user->delete();
-        $this->dispatchBrowserEvent('Delete');
-        $this->emit('refreshDatatable');
     }
 
     public function render()

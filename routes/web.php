@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\HelperController;
 use App\Livewire\Admin\Pages\Permission;
 use App\Livewire\Admin\Pages\Role;
 use App\Livewire\Admin\Pages\User;
@@ -39,3 +40,4 @@ Route::middleware([
     Route::get('/role', Role::class)->name('role');
     Route::get('/permission', Permission::class)->name('permission');
 });
+Route::get('show-picture}', [HelperController::class, 'showPicture'])->name('helper.show-picture');
